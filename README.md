@@ -14,6 +14,7 @@ This repository contains multiple projects that fall into different category. Se
 * Easy to use TCP client
 * SSL support
 * Custom protocol deframing / defragmentation support
+* Switching protocols at any time
 ### Basic Usage
 #### TCP Server
 ```csharp
@@ -76,7 +77,17 @@ using (var awaitaibleClient = new AwaitaibleAsyncNetTcpClient(client))
 }
 ```
 
-### Implementing custom protocol
+### Implementing custom protocol on top of TCP
+This library does not come with any particular protocol, but it lets you define one.
+
+You can read more about why it is necessary to implement a protocol and apply framing techniques when using TCP [here](https://blog.stephencleary.com/2009/04/message-framing.html).
+
+Protocol defined below is just an example. 
+You can come up with any protocol you want implementing `IProtocolFrameDefragmenter` or just defragmentation strategies: 
+* `ILengthPrefixedDefragmentationStrategy` together with predefined `LengthPrefixedDefragmenter`
+* `IMixedDefragmentationStrategy` together with predefined `MixedDefragmenter`
+
+#### Deframing (defragmnetation)
 Let's start with defragmentation (deframing) strategy:
 
 ```csharp
@@ -115,6 +126,7 @@ var client = new AsyncNetTcpClient(new AsyncNetTcpClientConfig
 ```
 `MyDefragmentationStrategy` expects that the four byte integer is present at the beginning of each frame. This integer is a value that determines the entire frame length - which is four bytes for frame header (integer length) plus a payload length (your message length). With this strategy it is possible to send and receive frames of any size, but it is recommended that your frames aren't too big.
 
+#### Message codec
 Remeber that you have to "encode" (prepend your message with it's length plus the length of the integer) any outgoing messages and "decode" (skip the frame header - four byte integer) any incoming frames to get your message. This simple class here will do the job:
 ```csharp
 public class MessageCodec
@@ -162,9 +174,7 @@ serverOrClient.FrameArrived += (sender, args) =>
 };
 ```
 
-You can read more about why it is necessary to apply framing techniques when using TCP [here](https://blog.stephencleary.com/2009/04/message-framing.html).
-
-This library does not come with any particular deframing/defragmentation strategy, but it lets you define your own protocol.
+That's it.
 
 ## AsyncNet.Udp
 ### Installation
