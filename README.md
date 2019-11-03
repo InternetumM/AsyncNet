@@ -10,11 +10,11 @@ This repository contains multiple projects that fall into different category. Se
 ### Installation
 [NuGet](https://www.nuget.org/packages/AsyncNet.Tcp/)
 ### Features:
-* Easy to use TCP server
-* Easy to use TCP client
-* SSL support
-* Custom protocol deframing / defragmentation support
-* Switching protocols at any time
+* [Easy to use TCP server](#tcp-server)
+* [Easy to use TCP client](#tcp-client)
+* [Custom protocol deframing / defragmentation support](#implementing-custom-protocol)
+* [Switching protocols at any time](#switching-protocols)
+* [SSL support](#ssl-support)
 ### Basic Usage
 #### TCP Server
 ```csharp
@@ -77,7 +77,7 @@ using (var awaitaibleClient = new AwaitaibleAsyncNetTcpClient(client))
 }
 ```
 
-### Implementing custom protocol on top of TCP
+### Implementing custom protocol
 This library does not come with any particular protocol, but it lets you define one.
 
 You can read more about why it is necessary to implement a protocol and apply framing techniques when using TCP [here](https://blog.stephencleary.com/2009/04/message-framing.html).
@@ -175,6 +175,85 @@ serverOrClient.FrameArrived += (sender, args) =>
 ```
 
 That's it.
+
+### Switching protocols
+
+It is sometimes needed to switch a protocol on particular peer at some point in time. 
+You can do that via `IRemoteTcpPeer.SwitchProtocol`.
+
+### SSL support
+If you look at the config class. You can configure SSL / TLS support there:
+
+#### Server
+
+```csharp
+    public class AsyncNetTcpServerConfig
+    {
+        public Func<IRemoteTcpPeer, IProtocolFrameDefragmenter> ProtocolFrameDefragmenterFactory { get; set; } = (_) => MixedDefragmenter.Default;
+
+        public TimeSpan ConnectionTimeout { get; set; } = TimeSpan.Zero;
+
+        public int MaxSendQueuePerPeerSize { get; set; } = -1;
+
+        public IPAddress IPAddress { get; set; } = IPAddress.Any;
+
+        public int Port { get; set; }
+
+        public Action<TcpListener> ConfigureTcpListenerCallback { get; set; }
+
+        public bool UseSsl { get; set; }
+
+        public X509Certificate X509Certificate { get; set; }
+
+        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = (_, __, ___, ____) => true;
+
+        public EncryptionPolicy EncryptionPolicy { get; set; } = EncryptionPolicy.RequireEncryption;
+
+        public Func<TcpClient, bool> ClientCertificateRequiredCallback { get; set; } = (_) => false;
+
+        public Func<TcpClient, bool> CheckCertificateRevocationCallback { get; set; } = (_) => false;
+
+        public SslProtocols EnabledProtocols { get; set; } = SslProtocols.Default;
+    }
+```
+#### Client
+
+```csharp
+    public class AsyncNetTcpClientConfig
+    {
+        public Func<IRemoteTcpPeer, IProtocolFrameDefragmenter> ProtocolFrameDefragmenterFactory { get; set; } = (_) => MixedDefragmenter.Default;
+
+        public string TargetHostname { get; set; }
+
+        public int TargetPort { get; set; }
+
+        public TimeSpan ConnectionTimeout { get; set; } = TimeSpan.Zero;
+
+        public int MaxSendQueueSize { get; set; } = -1;
+
+        public Action<TcpClient> ConfigureTcpClientCallback { get; set; }
+
+        public Func<IPAddress[], IEnumerable<IPAddress>> FilterResolvedIpAddressListForConnectionCallback { get; set; }
+
+        public bool UseSsl { get; set; }
+
+        public IEnumerable<X509Certificate> X509ClientCertificates { get; set; }
+
+        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = (_, __, ___, ____) => true;
+
+        public LocalCertificateSelectionCallback LocalCertificateSelectionCallback { get; set; }
+
+        public EncryptionPolicy EncryptionPolicy { get; set; } = EncryptionPolicy.RequireEncryption;
+
+        public bool CheckCertificateRevocation { get; set; }
+
+        public SslProtocols EnabledProtocols { get; set; } = SslProtocols.Default;
+    }
+```
+
+#### SSL config
+
+You can pass this config to the client/server constructor. Set the `UseSsl` property to true and provide your SSL certificate - setting the `X509Certificate ` property. You can also set `EncryptionPolicy` or `EnabledProtocols` and override any of the callbacks to configure your certificate rules if you want. The client or server will use SslStream behind the scenes.
 
 ## AsyncNet.Udp
 ### Installation
