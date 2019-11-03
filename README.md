@@ -178,82 +178,91 @@ That's it.
 
 ### Switching protocols
 
-It is sometimes needed to switch a protocol on particular peer at some point in time. 
+It is sometimes needed to switch a protocol to different one on particular peer at some point in time. 
 You can do that via `IRemoteTcpPeer.SwitchProtocol`.
+
+```csharp
+Lazy<IProtocolFrameDefragmenter> _otherProtocolFactory = new Lazy<IProtocolFrameDefragmenter>(() => 
+	new LengthPrefixedDefragmenter(new MyOtherDefragmentationStrategy()));
+
+// at some point in time
+peer.SwitchProtocol(_otherProtocolFactory.Value);
+```
 
 ### SSL support
 If you look at the config class. You can configure SSL / TLS support there:
 
-#### Server
-
-```csharp
-    public class AsyncNetTcpServerConfig
-    {
-        public Func<IRemoteTcpPeer, IProtocolFrameDefragmenter> ProtocolFrameDefragmenterFactory { get; set; } = (_) => MixedDefragmenter.Default;
-
-        public TimeSpan ConnectionTimeout { get; set; } = TimeSpan.Zero;
-
-        public int MaxSendQueuePerPeerSize { get; set; } = -1;
-
-        public IPAddress IPAddress { get; set; } = IPAddress.Any;
-
-        public int Port { get; set; }
-
-        public Action<TcpListener> ConfigureTcpListenerCallback { get; set; }
-
-        public bool UseSsl { get; set; }
-
-        public X509Certificate X509Certificate { get; set; }
-
-        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = (_, __, ___, ____) => true;
-
-        public EncryptionPolicy EncryptionPolicy { get; set; } = EncryptionPolicy.RequireEncryption;
-
-        public Func<TcpClient, bool> ClientCertificateRequiredCallback { get; set; } = (_) => false;
-
-        public Func<TcpClient, bool> CheckCertificateRevocationCallback { get; set; } = (_) => false;
-
-        public SslProtocols EnabledProtocols { get; set; } = SslProtocols.Default;
-    }
-```
 #### Client
 
 ```csharp
-    public class AsyncNetTcpClientConfig
-    {
-        public Func<IRemoteTcpPeer, IProtocolFrameDefragmenter> ProtocolFrameDefragmenterFactory { get; set; } = (_) => MixedDefragmenter.Default;
+public class AsyncNetTcpClientConfig
+{
+	public Func<IRemoteTcpPeer, IProtocolFrameDefragmenter> ProtocolFrameDefragmenterFactory { get; set; } = (_) => MixedDefragmenter.Default;
 
-        public string TargetHostname { get; set; }
+	public string TargetHostname { get; set; }
 
-        public int TargetPort { get; set; }
+	public int TargetPort { get; set; }
 
-        public TimeSpan ConnectionTimeout { get; set; } = TimeSpan.Zero;
+	public TimeSpan ConnectionTimeout { get; set; } = TimeSpan.Zero;
 
-        public int MaxSendQueueSize { get; set; } = -1;
+	public int MaxSendQueueSize { get; set; } = -1;
 
-        public Action<TcpClient> ConfigureTcpClientCallback { get; set; }
+	public Action<TcpClient> ConfigureTcpClientCallback { get; set; }
 
-        public Func<IPAddress[], IEnumerable<IPAddress>> FilterResolvedIpAddressListForConnectionCallback { get; set; }
+	public Func<IPAddress[], IEnumerable<IPAddress>> FilterResolvedIpAddressListForConnectionCallback { get; set; }
 
-        public bool UseSsl { get; set; }
+	public bool UseSsl { get; set; }
 
-        public IEnumerable<X509Certificate> X509ClientCertificates { get; set; }
+	public IEnumerable<X509Certificate> X509ClientCertificates { get; set; }
 
-        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = (_, __, ___, ____) => true;
+	public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = (_, __, ___, ____) => true;
 
-        public LocalCertificateSelectionCallback LocalCertificateSelectionCallback { get; set; }
+	public LocalCertificateSelectionCallback LocalCertificateSelectionCallback { get; set; }
 
-        public EncryptionPolicy EncryptionPolicy { get; set; } = EncryptionPolicy.RequireEncryption;
+	public EncryptionPolicy EncryptionPolicy { get; set; } = EncryptionPolicy.RequireEncryption;
 
-        public bool CheckCertificateRevocation { get; set; }
+	public bool CheckCertificateRevocation { get; set; }
 
-        public SslProtocols EnabledProtocols { get; set; } = SslProtocols.Default;
-    }
+	public SslProtocols EnabledProtocols { get; set; } = SslProtocols.Default;
+}
+```
+
+#### Server
+
+```csharp
+public class AsyncNetTcpServerConfig
+{
+	public Func<IRemoteTcpPeer, IProtocolFrameDefragmenter> ProtocolFrameDefragmenterFactory { get; set; } = (_) => MixedDefragmenter.Default;
+
+	public TimeSpan ConnectionTimeout { get; set; } = TimeSpan.Zero;
+
+	public int MaxSendQueuePerPeerSize { get; set; } = -1;
+
+	public IPAddress IPAddress { get; set; } = IPAddress.Any;
+
+	public int Port { get; set; }
+
+	public Action<TcpListener> ConfigureTcpListenerCallback { get; set; }
+
+	public bool UseSsl { get; set; }
+
+	public X509Certificate X509Certificate { get; set; }
+
+	public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = (_, __, ___, ____) => true;
+
+	public EncryptionPolicy EncryptionPolicy { get; set; } = EncryptionPolicy.RequireEncryption;
+
+	public Func<TcpClient, bool> ClientCertificateRequiredCallback { get; set; } = (_) => false;
+
+	public Func<TcpClient, bool> CheckCertificateRevocationCallback { get; set; } = (_) => false;
+
+	public SslProtocols EnabledProtocols { get; set; } = SslProtocols.Default;
+}
 ```
 
 #### SSL config
 
-You can pass this config to the client/server constructor. Set the `UseSsl` property to true and provide your SSL certificate - setting the `X509Certificate ` property. You can also set `EncryptionPolicy` or `EnabledProtocols` and override any of the callbacks to configure your certificate rules if you want. The client or server will use SslStream behind the scenes.
+You can pass this config to a client/server constructor. Set the `UseSsl` property to true and provide your SSL certificate - setting the `X509Certificate ` property. You can also set `EncryptionPolicy` or `EnabledProtocols` and override any of the callbacks to configure your certificate rules if you want. The client or server will use SslStream behind the scenes.
 
 ## AsyncNet.Udp
 ### Installation
