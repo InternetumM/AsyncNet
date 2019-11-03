@@ -76,6 +76,96 @@ using (var awaitaibleClient = new AwaitaibleAsyncNetTcpClient(client))
 }
 ```
 
+### Implementing custom protocol
+Let's start with defragmentation (deframing) strategy:
+
+```csharp
+public class MyDefragmentationStrategy : ILengthPrefixedDefragmentationStrategy
+{
+	public int GetFrameLength(byte[] data)
+	{
+		return BitConverter.ToInt32(data, 0);
+	}
+
+	public int FrameHeaderLength { get; } = sizeof(int);
+}
+
+// Making sure that frame defragmenter is created only once,
+// because factory method is called for each received chunk of data
+var lazyFactory = new Lazy<IProtocolFrameDefragmenter>(() => 
+	new LengthPrefixedDefragmenter(new MyDefragmentationStrategy()));
+
+// Server code
+var server = new AsyncNetTcpServer(new AsyncNetTcpServerConfig
+{
+	ConnectionTimeout = TimeSpan.FromMinutes(5),
+	Port = 5555,
+	IPAddress = IPAddress.Parse("127.0.0.1"),
+	ProtocolFrameDefragmenterFactory = _ => lazyFactory.Value
+});
+
+// Client code
+var client = new AsyncNetTcpClient(new AsyncNetTcpClientConfig
+{
+	ConnectionTimeout = TimeSpan.FromMinutes(5),
+	TargetPort = 5555,
+	TargetHostname = "127.0.0.1",
+	ProtocolFrameDefragmenterFactory = _ => lazyFactory.Value
+});
+```
+`MyDefragmentationStrategy` expects that the four byte integer is present at the beginning of each frame. This integer is a value that determines the entire frame length - which is four bytes for frame header (integer length) plus a payload length (your message length). With this strategy it is possible to send and receive frames of any size, but it is recommended that your frames aren't too big.
+
+Remeber that you have to "encode" (prepend your message with it's length plus the length of the integer) any outgoing messages and "decode" (skip the frame header - four byte integer) any incoming frames to get your message. This simple class here will do the job:
+```csharp
+public class MessageCodec
+{
+	public byte[] Encode(byte[] data)
+	{
+		using (var ms = new MemoryStream())
+		using (var bw = new BinaryWriter(ms))
+		{
+			bw.Write(data.Length + sizeof(int));
+			bw.Write(data, 0, data.Length);
+
+			return ms.ToArray();
+		}
+	}
+
+	public byte[] Decode(byte[] frame)
+	{
+		using (var ms = new MemoryStream(frame))
+		using (var br = new BinaryReader(ms))
+		{
+			var dataLength = br.ReadInt32() - sizeof(int);
+
+			return br.ReadBytes(dataLength);
+		}
+	}
+}
+```
+
+`MessageCodec` usage:
+
+```csharp
+MessageCodec _codec = new MessageCodec();
+
+// Encoding
+var myMessage = new byte[] { 65, 65, 65 };
+var frame = _codec.Encode(myMessage);
+peer.Post(frame);
+
+// Decoding
+serverOrClient.FrameArrived += (sender, args) =>
+{
+	var myMessage = _codec.Decode(args.FrameData);
+	// do something with your message
+};
+```
+
+You can read more about why it is necessary to apply framing techniques when using TCP [here](https://blog.stephencleary.com/2009/04/message-framing.html).
+
+This library does not come with any particular deframing/defragmentation strategy, but it lets you define your own protocol.
+
 ## AsyncNet.Udp
 ### Installation
 [NuGet](https://www.nuget.org/packages/AsyncNet.Udp/)
