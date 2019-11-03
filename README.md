@@ -124,7 +124,7 @@ var client = new AsyncNetTcpClient(new AsyncNetTcpClientConfig
 	ProtocolFrameDefragmenterFactory = _ => lazyFactory.Value
 });
 ```
-`MyDefragmentationStrategy` expects that the four byte integer is present at the beginning of each frame. This integer is a value that determines the entire frame length - which is four bytes for frame header (integer length) plus a payload length (your message length). With this strategy it is possible to send and receive frames of any size, but it is recommended that your frames aren't too big.
+`MyDefragmentationStrategy` expects that a four byte integer is present at the beginning of each frame. This integer is a value that determines the entire frame length - which is four bytes for frame header (integer length) plus a payload length (your message length). With this strategy it is possible to send and receive frames of any size, but it is recommended that your frames aren't too big.
 
 #### Message codec
 Remeber that you have to "encode" (prepend your message with it's length plus the length of the integer) any outgoing messages and "decode" (skip the frame header - four byte integer) any incoming frames to get your message. This simple class here will do the job:
