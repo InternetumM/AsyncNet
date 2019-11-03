@@ -136,7 +136,7 @@ public class MessageCodec
 		using (var ms = new MemoryStream())
 		using (var bw = new BinaryWriter(ms))
 		{
-			bw.Write(data.Length + sizeof(int));
+			bw.Write(sizeof(int) + data.Length);
 			bw.Write(data, 0, data.Length);
 
 			return ms.ToArray();
