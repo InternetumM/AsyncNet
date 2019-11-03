@@ -87,7 +87,7 @@ You can come up with any protocol you want implementing `IProtocolFrameDefragmen
 * `ILengthPrefixedDefragmentationStrategy` and put it into predefined `LengthPrefixedDefragmenter`
 * `IMixedDefragmentationStrategy` and put it into predefined `MixedDefragmenter`
 
-#### Deframing (defragmnetation)
+#### Deframing (defragmentation)
 Let's start with defragmentation (deframing) strategy:
 
 ```csharp
