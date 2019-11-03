@@ -262,7 +262,7 @@ public class AsyncNetTcpServerConfig
 
 #### SSL config
 
-You can pass this config to a client/server constructor. Set the `UseSsl` property to true and provide your SSL certificate - setting the `X509Certificate ` property. You can also set `EncryptionPolicy` or `EnabledProtocols` and override any of the callbacks to configure your certificate rules if you want. The client or server will use SslStream behind the scenes.
+You can pass this config to a client/server constructor. Set the `UseSsl` property to true and provide your SSL certificate - setting the `X509Certificate ` property. You can also set `EncryptionPolicy` or `EnabledProtocols` and override any of the callbacks to configure your certificate rules if you want. The client or server will use `SslStream` behind the scenes.
 
 ## AsyncNet.Udp
 ### Installation
