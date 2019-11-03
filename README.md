@@ -178,7 +178,7 @@ That's it.
 
 ### Switching protocols
 
-It is sometimes needed to switch a protocol to different one on particular peer at some point in time. 
+It is sometimes needed to switch a protocol to a different one on a particular peer at some point in time. 
 You can do that via `IRemoteTcpPeer.SwitchProtocol`.
 
 ```csharp
