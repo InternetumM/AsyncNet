@@ -190,7 +190,7 @@ peer.SwitchProtocol(_otherProtocolFactory.Value);
 ```
 
 ### SSL support
-If you look at the config classes. You can configure SSL / TLS support there:
+If you look at the config classes, you can configure SSL / TLS support there:
 
 #### Client
 
