@@ -80,7 +80,7 @@ using (var awaitaibleClient = new AwaitaibleAsyncNetTcpClient(client))
 ### Implementing custom protocol
 This library does not come with any particular protocol, but it lets you define one.
 
-You can read more about why it is necessary to implement a protocol and apply framing techniques when using TCP [here](https://blog.stephencleary.com/2009/04/message-framing.html).
+You can read more about why it is often necessary to implement a protocol and apply framing techniques when using TCP [here](https://blog.stephencleary.com/2009/04/message-framing.html).
 
 Protocol defined below is just an example. 
 You can come up with any protocol you want implementing `IProtocolFrameDefragmenter` or just defragmentation strategies: 
