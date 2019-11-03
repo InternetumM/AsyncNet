@@ -84,8 +84,8 @@ You can read more about why it is necessary to implement a protocol and apply fr
 
 Protocol defined below is just an example. 
 You can come up with any protocol you want implementing `IProtocolFrameDefragmenter` or just defragmentation strategies: 
-* `ILengthPrefixedDefragmentationStrategy` together with predefined `LengthPrefixedDefragmenter`
-* `IMixedDefragmentationStrategy` together with predefined `MixedDefragmenter`
+* `ILengthPrefixedDefragmentationStrategy` and put it into predefined `LengthPrefixedDefragmenter`
+* `IMixedDefragmentationStrategy` and put it into predefined `MixedDefragmenter`
 
 #### Deframing (defragmnetation)
 Let's start with defragmentation (deframing) strategy:
