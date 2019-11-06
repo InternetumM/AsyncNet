@@ -110,7 +110,7 @@ var lazyFactory = new Lazy<IProtocolFrameDefragmenter>(() =>
 var server = new AsyncNetTcpServer(new AsyncNetTcpServerConfig
 {
 	ConnectionTimeout = TimeSpan.FromMinutes(5),
-	Port = 5555,
+	Port = 7788,
 	IPAddress = IPAddress.Parse("127.0.0.1"),
 	ProtocolFrameDefragmenterFactory = _ => lazyFactory.Value
 });
@@ -119,7 +119,7 @@ var server = new AsyncNetTcpServer(new AsyncNetTcpServerConfig
 var client = new AsyncNetTcpClient(new AsyncNetTcpClientConfig
 {
 	ConnectionTimeout = TimeSpan.FromMinutes(5),
-	TargetPort = 5555,
+	TargetPort = 7788,
 	TargetHostname = "127.0.0.1",
 	ProtocolFrameDefragmenterFactory = _ => lazyFactory.Value
 });
